@@ -1,0 +1,5 @@
+## env
+.env
+
+## Docker compose dev
+docker-compose-dev.yaml
