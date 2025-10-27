@@ -1,0 +1,3 @@
+TODOS: 
+  - add validation unique field
+  - auth (login, logout, me, refresh token)

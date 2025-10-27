@@ -10,5 +10,7 @@ func main() {
 
 	helpers.SetupLogger()
 
+	helpers.SetupPostgreSQL()
+
 	cmd.ServeHTTP()
 }
