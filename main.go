@@ -8,5 +8,7 @@ import (
 func main() {
 	helpers.SetupUpConfig()
 
+	helpers.SetupLogger()
+
 	cmd.ServeHTTP()
 }
