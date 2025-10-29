@@ -3,3 +3,19 @@
 
 ## Docker compose dev
 docker-compose-dev.yaml
+
+# binaries
+/bin/
+/dist/
+/out/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# go
+coverage.out
+
+# editor
+.idea/
+.vscode/

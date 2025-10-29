@@ -14,6 +14,17 @@ type UserAPI struct {
 	UserService services.UserService
 }
 
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Register a new customer user account
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User registration details"
+// @Success 200 {object} helpers.BaseResponse "Successfully registered user"
+// @Failure 400 {object} helpers.BaseResponse "Bad request - invalid input"
+// @Failure 500 {object} helpers.BaseResponse "Internal server error"
+// @Router /api/v1/auth/register [post]
 func (api *UserAPI) RegisterUser(e echo.Context) error {
 	var (
 		log = helpers.Logger
@@ -30,7 +41,7 @@ func (api *UserAPI) RegisterUser(e echo.Context) error {
 		return helpers.ResponseHttp(e, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 	}
 
-	resp, err := api.UserService.Register(e.Request().Context(), &req, "customer")
+	resp, err := api.UserService.Register(e.Request().Context(), &req, constants.RoleCustomer)
 	if err != nil {
 		log.Error("failed to register: ", err)
 		return helpers.ResponseHttp(e, http.StatusInternalServerError, constants.ErrServerError, nil)

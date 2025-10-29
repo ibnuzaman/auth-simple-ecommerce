@@ -8,6 +8,9 @@ import (
 	"github.com/ibnuzaman/auth-simple-ecommerce.git/internal/services"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	_ "github.com/ibnuzaman/auth-simple-ecommerce.git/docs"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func ServeHTTP() {
@@ -18,9 +21,8 @@ func ServeHTTP() {
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
 	}))
 
-	// routes := setupRoutes(e)
-
 	api := e.Group("/api")
+	api.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Healthcheck
 	api.GET("/", dependency.HealthcheckAPI.HealthCheck)
@@ -30,17 +32,6 @@ func ServeHTTP() {
 	auth.POST("/register", dependency.UserAPI.RegisterUser)
 
 	e.Start(":" + helpers.GetEnv("PORT", "9000"))
-}
-
-func setupRoutes(e *echo.Echo) {
-	// api := e.Group("/api")
-
-	// // Healthcheck
-	// api.GET("/", dependency.HealthcheckAPI.HealthCheck)
-
-	// // Auth
-	// auth := api.Group("/v1/auth")
-	// auth.POST("/register", dependency.UserAPI.RegisterUser)
 }
 
 type Dependency struct {

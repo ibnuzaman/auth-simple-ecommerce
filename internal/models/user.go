@@ -9,7 +9,7 @@ import (
 type User struct {
 	ID          int       `json:"id" `
 	Username    string    `json:"username" gorm:"colum:username;type:varchar(20)" validate:"required"`
-	Email       string    `json:"email" gorm:"colum:email;type:varchar(100);unique" validate:"required"`
+	Email       string    `json:"email" gorm:"colum:email;type:varchar(100)" validate:"required"`
 	PhoneNumber string    `json:"phone_number" gorm:"colum:phone_number;type:varchar(15)" validate:"required"`
 	FullName    string    `json:"full_name" gorm:"colum:full_name;type:varchar(100)" validate:"required"`
 	Address     string    `json:"address" gorm:"colum:address;type:text" `
