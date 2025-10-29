@@ -15,16 +15,17 @@ type UserAPI struct {
 }
 
 // RegisterUser godoc
-// @Summary Register a new user
-// @Description Register a new customer user account
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user body models.User true "User registration details"
-// @Success 200 {object} helpers.BaseResponse "Successfully registered user"
-// @Failure 400 {object} helpers.BaseResponse "Bad request - invalid input"
-// @Failure 500 {object} helpers.BaseResponse "Internal server error"
-// @Router /api/v1/auth/register [post]
+//
+//	@Summary		Register a new user
+//	@Description	Register a new customer user account
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		models.User				true	"User registration details"
+//	@Success		200		{object}	helpers.BaseResponse	"Successfully registered user"
+//	@Failure		400		{object}	helpers.BaseResponse	"Bad request - invalid input"
+//	@Failure		500		{object}	helpers.BaseResponse	"Internal server error"
+//	@Router			/api/v1/auth/register [post]
 func (api *UserAPI) RegisterUser(e echo.Context) error {
 	var (
 		log = helpers.Logger

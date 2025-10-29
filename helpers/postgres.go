@@ -22,5 +22,8 @@ func SetupPostgreSQL() {
 
 	logrus.Info("Successfully connect to database..")
 
-	DB.AutoMigrate(&models.User{}, &models.UserSession{})
+	err = DB.AutoMigrate(&models.User{}, &models.UserSession{})
+	if err != nil {
+		logrus.Info("Failed to auto migration", err)
+	}
 }

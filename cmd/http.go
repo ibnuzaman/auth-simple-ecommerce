@@ -8,6 +8,7 @@ import (
 	"github.com/ibnuzaman/auth-simple-ecommerce.git/internal/services"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/sirupsen/logrus"
 
 	_ "github.com/ibnuzaman/auth-simple-ecommerce.git/docs"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -31,7 +32,11 @@ func ServeHTTP() {
 	auth := api.Group("/v1/auth")
 	auth.POST("/register", dependency.UserAPI.RegisterUser)
 
-	e.Start(":" + helpers.GetEnv("PORT", "9000"))
+	if err := e.Start(":" + helpers.GetEnv("PORT", "9000")); err != nil {
+		logrus.Info("Failed to connect app", err)
+		return
+	}
+
 }
 
 type Dependency struct {
