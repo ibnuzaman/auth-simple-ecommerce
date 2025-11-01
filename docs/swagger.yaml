@@ -1,7 +1,132 @@
+basePath: /api
 definitions:
   api.home:
     properties:
       title:
+        type: string
+    type: object
+  dto.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_at:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserResponse'
+    type: object
+  dto.ChangePasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  dto.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dto.LoginRequest:
+    properties:
+      email_or_username:
+        type: string
+      password:
+        type: string
+    required:
+    - email_or_username
+    - password
+    type: object
+  dto.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  dto.RegisterRequest:
+    properties:
+      address:
+        example: Jl Patiunus 1
+        maxLength: 500
+        type: string
+      dob:
+        description: '"YYYY-MM-DD"'
+        example: "1999-01-01"
+        type: string
+      email:
+        example: admin@example.com
+        maxLength: 100
+        type: string
+      full_name:
+        example: super admin
+        maxLength: 100
+        minLength: 3
+        type: string
+      password:
+        example: password
+        maxLength: 72
+        minLength: 8
+        type: string
+      phone_number:
+        example: "62877618152"
+        maxLength: 15
+        minLength: 8
+        type: string
+      username:
+        example: admin
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - email
+    - full_name
+    - password
+    - phone_number
+    - username
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  dto.UserResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      dob:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      phone_number:
+        type: string
+      role:
+        type: string
+      username:
         type: string
     type: object
   helpers.BaseResponse:
@@ -12,66 +137,19 @@ definitions:
       message:
         type: string
     type: object
-  models.User:
-    properties:
-      address:
-        type: string
-      dob:
-        type: string
-      email:
-        type: string
-      full_name:
-        type: string
-      id:
-        type: integer
-      password:
-        type: string
-      phone_number:
-        type: string
-      role:
-        type: string
-      username:
-        type: string
-    required:
-    - email
-    - full_name
-    - password
-    - phone_number
-    - username
-    type: object
+host: localhost:9000
 info:
-  contact: {}
+  contact:
+    email: support@example.com
+    name: API Support
+  description: Authentication microservice for e-commerce platform with JWT
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Auth Simple Ecommerce API
+  version: "1.0"
 paths:
-  /api/v1/auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new customer user account
-      parameters:
-      - description: User registration details
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully registered user
-          schema:
-            $ref: '#/definitions/helpers.BaseResponse'
-        "400":
-          description: Bad request - invalid input
-          schema:
-            $ref: '#/definitions/helpers.BaseResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/helpers.BaseResponse'
-      summary: Register a new user
-      tags:
-      - users
   /health:
     get:
       consumes:
@@ -87,4 +165,298 @@ paths:
       summary: Health check endpoint
       tags:
       - health
+  /v1/auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change password for authenticated user
+      parameters:
+      - description: Old and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - Authentication
+  /v1/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset token to user's email
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      summary: Request password reset
+      tags:
+      - Authentication
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      summary: User login
+      tags:
+      - Authentication
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user and invalidate token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - Authentication
+  /v1/auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get authenticated user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Authentication
+  /v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Registration request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password using reset token
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.MessageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.BaseResponse'
+      summary: Reset password
+      tags:
+      - Authentication
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

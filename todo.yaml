@@ -1,3 +1,7 @@
-TODOS: 
-  - add validation unique field
-  - auth (login, logout, me, refresh token)
+TODOS:
+  - Setup SMTP untuk email forgot password
+  - Add rate limiting
+  - Implementation email verification
+  - Add comprehensive tests
+  - Setup CI/CD
+  - Add 2FA (optional)

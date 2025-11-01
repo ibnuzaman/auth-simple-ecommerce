@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/ibnuzaman/auth-simple-ecommerce.git/constants"
 	"github.com/ibnuzaman/auth-simple-ecommerce.git/helpers"
-	"github.com/ibnuzaman/auth-simple-ecommerce.git/internal/models"
+	"github.com/ibnuzaman/auth-simple-ecommerce.git/internal/models/dto"
 	"github.com/ibnuzaman/auth-simple-ecommerce.git/internal/services"
 	"github.com/labstack/echo/v4"
 )
@@ -26,27 +28,31 @@ type UserAPI struct {
 //	@Failure		400		{object}	helpers.BaseResponse	"Bad request - invalid input"
 //	@Failure		500		{object}	helpers.BaseResponse	"Internal server error"
 //	@Router			/api/v1/auth/register [post]
-func (api *UserAPI) RegisterUser(e echo.Context) error {
-	var (
-		log = helpers.Logger
-	)
-	req := models.User{}
+var validate = validator.New()
 
-	if err := e.Bind(&req); err != nil {
-		log.Error("failed to parse request: ", err)
-		return helpers.ResponseHttp(e, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+func (api *UserAPI) RegisterUser(c echo.Context) error {
+	var req dto.RegisterRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.ResponseHttp(c, http.StatusBadRequest, constants.ErrBadRequest, nil)
+	}
+	if err := validate.Struct(req); err != nil {
+		return helpers.ResponseHttp(c, http.StatusBadRequest, constants.ErrBadRequest, echo.Map{
+			"details": err.Error(),
+		})
 	}
 
-	if err := req.Validate(); err != nil {
-		log.Error("failed to validate request: ", err)
-		return helpers.ResponseHttp(e, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
-	}
-
-	resp, err := api.UserService.Register(e.Request().Context(), &req, constants.RoleCustomer)
+	resp, err := api.UserService.Register(c.Request().Context(), req, constants.RoleCustomer)
 	if err != nil {
-		log.Error("failed to register: ", err)
-		return helpers.ResponseHttp(e, http.StatusInternalServerError, constants.ErrServerError, nil)
+		var cf *constants.ConflictError
+		if errors.As(err, &cf) {
+			return helpers.ResponseHttp(c, http.StatusConflict, constants.ErrDuplicate, echo.Map{
+				"field":   cf.Field,
+				"message": cf.Field + " already in use",
+			})
+		}
+		return helpers.ResponseHttp(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 	}
 
-	return helpers.ResponseHttp(e, http.StatusOK, constants.SuccessMessage, resp)
+	// 201 Created lebih tepat untuk registrasi
+	return helpers.ResponseHttp(c, http.StatusCreated, constants.SuccessMessage, resp)
 }

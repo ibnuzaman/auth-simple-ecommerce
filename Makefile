@@ -1,4 +1,4 @@
-.PHONY: build run dev test lint lint-fix docker-up docker-down docker-restart clean help
+.PHONY: build run dev docs test lint lint-fix docker-up docker-down docker-restart clean migrate help
 
 # Build the application
 build:
@@ -12,9 +12,18 @@ run:
 dev:
 	air
 
+# Generate docs api with swagger
+docs:
+	swag init	
+
 # Run tests
 test:
 	go test -v ./...
+
+# Run tests with coverage
+test-coverage:
+	go test -v -cover -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
 
 # Run linter
 lint:
@@ -27,21 +36,47 @@ lint:
 lint-fix:
 	golangci-lint run --fix ./...
 
+# Tidy dependencies
+tidy:
+	go mod tidy
+	go mod download
+
+# Install tools
+install-tools:
+	go install github.com/swaggo/swag/cmd/swag@latest
+	go install github.com/air-verse/air@latest
+
 # Start docker-compose services
 docker-up:
-	docker-compose up -d
+	docker-compose -f docker-compose-dev.yaml up -d
 
 # Stop docker-compose services
 docker-down:
-	docker-compose down
+	docker-compose -f docker-compose-dev.yaml down
 
 # Restart docker-compose services
 docker-restart:
-	docker-compose restart
+	docker-compose -f docker-compose-dev.yaml restart
+
+# View docker logs
+docker-logs:
+	docker-compose -f docker-compose-dev.yaml logs -f
+
+# Run database migrations
+migrate:
+	@echo "Running migrations..."
+	@if [ -f .env ]; then \
+		export $$(cat .env | xargs) && \
+		psql -h $$DB_HOST -U $$DB_USER -d $$DB_NAME -f migrations/001_add_auth_fields.sql; \
+	else \
+		echo "Error: .env file not found"; \
+		exit 1; \
+	fi
 
 # Clean build artifacts
 clean:
 	rm -rf bin/
+	rm -f coverage.out coverage.html
 
 # Show help
 help:
